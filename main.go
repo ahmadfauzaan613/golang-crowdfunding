@@ -3,7 +3,12 @@ package main
 import (
 	"crowdfunding/config"
 	"crowdfunding/databases"
+	"crowdfunding/handler"
+	"crowdfunding/repository"
+	"crowdfunding/services"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -16,5 +21,15 @@ func main() {
 		log.Fatal("Failed to connect DB")
 	}
 
-	log.Println("Application started...")
+	userRepository := repository.UserRepository(db)
+	userService := services.ServicesUser(userRepository)
+	userHandler := handler.HandlerUser(userService)
+
+	router := gin.Default()
+	api := router.Group("/api/v1")
+	{
+		api.POST("/users", userHandler.CreateUser)
+	}
+
+	router.Run()
 }
